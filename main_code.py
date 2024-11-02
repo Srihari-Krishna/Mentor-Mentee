@@ -28,14 +28,46 @@ def admin_menu():
     print("4) View Mentees")
     choice = int(input("Enter your choice: "))
     
-    if choice == 1:
-        add_mentor()
-    elif choice == 2:
-        add_mentee(mngmt_id)
+    if choice == 1: # add mentor
+        name = input("Enter mentor name: ")
+        highest_qual = input("Enter highest qualification: (HS,UG,PG,PhD) ")
+
+        # For printing the department names. Remove them when implementing gui
+        cursor.execute("SELECT * FROM department")
+        departments = cursor.fetchall()
+        for department in departments:
+            print(f"{department[0]}: {department[1]}")
+
+        dept_id = int(input("Enter department ID: "))
+
+        add_mentor(name,highest_qual,dept_id)
+
+    elif choice == 2: # add mentee
+        name = input("Enter mentee name: ")
+        gpa = float(input("Enter GPA: "))
+
+        cursor.execute("SELECT * FROM department")
+        departments = cursor.fetchall()
+        for department in departments:
+            print(f"{department[0]}: {department[1]}")
+
+        dept_id = int(input("Enter department ID: "))
+        
+        print("Allocating mentee to mentor\n\n")
+        cursor.execute(f"select * from mentor")
+        mentors = cursor.fetchall()
+        for mentor in mentors:
+            print(mentor)
+
+        mentor_id = int(input("\nEnter mentor ID: "))
+        add_mentee(mngmt_id, name, gpa, dept_id, mentor_id)
+
     elif choice == 3:
         view_mentors()
+    
     elif choice == 4:
         view_mentees()
+    
     else:
         print("Invalid choice!")
 
@@ -48,10 +80,34 @@ def mentor_menu(mentor_id):
     
     if choice == 1:
         view_assigned_mentees(mentor_id)
+
     elif choice == 2:
-        schedule_session(mentor_id)
+
+        cursor.execute(f"SELECT * FROM mentee WHERE Mentor_ID = {mentor_id}")
+        mentees = cursor.fetchall()
+        for mentee in mentees:
+            print(mentee)
+        
+        mentee_id = int(input("Enter Mentee ID: "))
+        session_time = input("Enter session time (YYYY-MM-DD HH:MM:SS): ")
+
+        schedule_session(mentor_id, mentee_id, session_time)
+    
     elif choice == 3:
-        provide_feedback(mentor_id)
+        cursor.execute(f"""
+            SELECT session.id, session.time, mentee.name
+            FROM session
+            JOIN mentee ON session.mentee_id = mentee.id
+            WHERE session.mentor_id = {mentor_id}
+        """)
+        sessions = cursor.fetchall()
+        for session in sessions: 
+            print(session)
+        
+        session_id = int(input("Enter Session ID: "))
+        feedback = input("Enter feedback: ")
+        provide_feedback(mentor_id, session_id, feedback)
+    
     else:
         print("Invalid choice!")
 
@@ -64,44 +120,27 @@ def mentee_menu(mentee_id):
     if choice == 1:
         view_scheduled_sessions(mentee_id)
     elif choice == 2:
-        provide_feedback_as_mentee(mentee_id)
+
+        cursor.execute(f"SELECT * FROM session WHERE Mentee_ID = {mentee_id}")
+        sessions = cursor.fetchall()
+        for session in sessions:
+            print(session)
+        
+        session_id = int(input("Enter Session ID: "))
+        feedback = input("Enter feedback: ")
+
+        provide_feedback_as_mentee(mentee_id, session_id, feedback)
     else:
         print("Invalid choice!")
 
 # Add Mentor
-def add_mentor():
-    name = input("Enter mentor name: ")
-    highest_qual = input("Enter mentor highest qualification: (HS,UG,PG,PhD) ") 
-    
-    cursor.execute("SELECT * FROM department")
-    departments = cursor.fetchall()
-    for department in departments:
-        print(f"{department[0]}: {department[1]}")
-
-    dept_id = int(input("Enter department ID: "))
+def add_mentor(name,highest_qual,dept_id):
     cursor.callproc('AddMentor', (name, highest_qual, dept_id))
     db.commit()
     print("Mentor added successfully!")
 
 # Add Mentee
-def add_mentee(mngmt_id):
-    name = input("Enter mentee name: ")
-    gpa = float(input("Enter GPA: "))
-    
-    cursor.execute("SELECT * FROM department")
-    departments = cursor.fetchall()
-    for department in departments:
-        print(f"{department[0]}: {department[1]}")
-
-    dept_id = int(input("Enter department ID: "))
-    
-    print("Allocating mentee to mentor\n\n")
-    cursor.execute(f"select * from mentor")
-    mentors = cursor.fetchall()
-    for mentor in mentors:
-        print(mentor)
-
-    mentor_id = int(input("\nEnter mentor ID: "))
+def add_mentee(mngmt_id, name, gpa, dept_id, mentor_id): 
     cursor.execute(f"INSERT INTO mentee (name, GPA, department_id, mentor_id) VALUES ('{name}', {gpa}, {dept_id}, {mentor_id})")
     mentee_id = cursor.lastrowid
     cursor.execute(f"insert into allocation values({mngmt_id},{mentor_id},{mentee_id})")
@@ -136,32 +175,15 @@ def view_assigned_mentees(mentor_id):
         print(mentee)
 
 # Schedule session
-def schedule_session(mentor_id):
-    cursor.execute(f"SELECT * FROM mentee WHERE Mentor_ID = {mentor_id}")
-    mentees = cursor.fetchall()
-    for mentee in mentees:
-        print(mentee)
+def schedule_session(mentor_id, mentee_id, session_time):
     
-    mentee_id = int(input("Enter Mentee ID: "))
-    session_time = input("Enter session time (YYYY-MM-DD HH:MM:SS): ")
     cursor.execute(f"INSERT INTO session (Time, Mentor_ID, Mentee_ID) VALUES ('{session_time}', {mentor_id}, {mentee_id})")
     db.commit()
     print("Session scheduled successfully!")
 
 # Provide feedback
-def provide_feedback(mentor_id):
-    cursor.execute(f"""
-        SELECT session.id, session.time, mentee.name
-        FROM session
-        JOIN mentee ON session.mentee_id = mentee.id
-        WHERE session.mentor_id = {mentor_id}
-    """)
-    sessions = cursor.fetchall()
-    for session in sessions: 
-        print(session)
+def provide_feedback(mentor_id, session_id, feedback):
     
-    session_id = int(input("Enter Session ID: "))
-    feedback = input("Enter feedback: ")
     cursor.execute(f"UPDATE feedback SET mentor_feedback = '{feedback}' WHERE ID = {session_id}")    
     db.commit()
     print("Feedback submitted successfully!")
@@ -179,15 +201,7 @@ def view_scheduled_sessions(mentee_id):
         print(session)
 
 # Mentee provide feedback
-def provide_feedback_as_mentee(mentee_id):
-    cursor.execute(f"SELECT * FROM session WHERE Mentee_ID = {mentee_id}")
-    sessions = cursor.fetchall()
-    for session in sessions:
-        print(session)
-    
-    session_id = int(input("Enter Session ID: "))
-    feedback = input("Enter feedback: ")
-    
+def provide_feedback_as_mentee(mentee_id, session_id, feedback):
     cursor.execute(f"UPDATE feedback SET mentee_feedback = '{feedback}' WHERE ID = {session_id}")
     db.commit()
     print("Feedback submitted successfully!")
