@@ -79,7 +79,7 @@ def add_mentor():
         print(f"{department[0]}: {department[1]}")
 
     dept_id = int(input("Enter department ID: "))
-    cursor.execute(f"INSERT INTO mentor (name, highest_qualification, department_id) VALUES ('{name}', '{highest_qual}', {dept_id})")
+    cursor.callproc('AddMentor', (name, highest_qual, dept_id))
     db.commit()
     print("Mentor added successfully!")
 
@@ -110,10 +110,16 @@ def add_mentee(mngmt_id):
 
 # View all mentors
 def view_mentors():
-    cursor.execute("SELECT * FROM mentor")
+    cursor.execute("""
+        SELECT mentor.id, mentor.name, mentor.highest_qualification, department.department, COUNT(session.id) AS session_count
+        FROM mentor
+        LEFT JOIN department ON mentor.department_id = department.id
+        LEFT JOIN session ON mentor.id = session.mentor_id
+        GROUP BY mentor.id, mentor.name, mentor.highest_qualification, department.department
+    """)
     mentors = cursor.fetchall()
     for mentor in mentors:
-        print(f"{mentor[0]}: {mentor[1]} {mentor[2]} {mentor[3]}")
+        print(f"{mentor[0]}: {mentor[1]} {mentor[2]} {mentor[3]} Sessions: {mentor[4]}")
 
 # View all mentees
 def view_mentees():
@@ -139,14 +145,17 @@ def schedule_session(mentor_id):
     mentee_id = int(input("Enter Mentee ID: "))
     session_time = input("Enter session time (YYYY-MM-DD HH:MM:SS): ")
     cursor.execute(f"INSERT INTO session (Time, Mentor_ID, Mentee_ID) VALUES ('{session_time}', {mentor_id}, {mentee_id})")
-    cursor.execute(f"Insert into feedback values({cursor.lastrowid},NULL,NULL)")
     db.commit()
     print("Session scheduled successfully!")
 
 # Provide feedback
 def provide_feedback(mentor_id):
-
-    cursor.execute(f"select * from session where Mentor_ID = {mentor_id}")
+    cursor.execute(f"""
+        SELECT session.id, session.time, mentee.name
+        FROM session
+        JOIN mentee ON session.mentee_id = mentee.id
+        WHERE session.mentor_id = {mentor_id}
+    """)
     sessions = cursor.fetchall()
     for session in sessions: 
         print(session)
@@ -159,14 +168,18 @@ def provide_feedback(mentor_id):
 
 # Mentee's view scheduled sessions
 def view_scheduled_sessions(mentee_id):
-    cursor.execute(f"SELECT time FROM session WHERE Mentee_ID = {mentee_id}")
+    cursor.execute(f"""
+        SELECT session.time, mentor.name
+        FROM session
+        JOIN mentor ON session.mentor_id = mentor.id
+        WHERE session.mentee_id = {mentee_id}
+    """)
     sessions = cursor.fetchall()
     for session in sessions:
         print(session)
 
 # Mentee provide feedback
 def provide_feedback_as_mentee(mentee_id):
-    
     cursor.execute(f"SELECT * FROM session WHERE Mentee_ID = {mentee_id}")
     sessions = cursor.fetchall()
     for session in sessions:
@@ -178,6 +191,24 @@ def provide_feedback_as_mentee(mentee_id):
     cursor.execute(f"UPDATE feedback SET mentee_feedback = '{feedback}' WHERE ID = {session_id}")
     db.commit()
     print("Feedback submitted successfully!")
+
+# Nested query to get sessions for a mentor
+def get_sessions_for_mentor(mentor_id):
+    cursor.execute(f"""
+        SELECT session.id, session.time, mentee.name
+        FROM session
+        WHERE session.mentor_id = {mentor_id}
+        AND session.id IN (SELECT id FROM session WHERE mentor_id = {mentor_id})
+    """)
+    sessions = cursor.fetchall()
+    for session in sessions:
+        print(session)
+
+# Aggregate query to get the average GPA of mentees for a mentor
+def get_avg_gpa_for_mentor(mentor_id):
+    cursor.execute(f"SELECT AvgGPA({mentor_id})")
+    avg_gpa = cursor.fetchone()[0]
+    print(f"Average GPA for mentor {mentor_id}: {avg_gpa}")
 
 # Main logic
 print("Welcome to the Mentor-Mentee System\n")

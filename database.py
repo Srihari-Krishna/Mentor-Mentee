@@ -101,6 +101,40 @@ cursor.execute("INSERT INTO department(department) VALUES('CIVIL')")
 cursor.execute("INSERT INTO department(department) VALUES('IT')")
 cursor.execute("INSERT INTO department(department) VALUES('EEE')")
 
+# Create trigger to insert a row into feedback table when a new session is created
+# Trigger for after session insert
+cursor.execute("DROP TRIGGER IF EXISTS after_session_insert;")
+cursor.execute("""
+    CREATE TRIGGER after_session_insert
+    AFTER INSERT ON session
+    FOR EACH ROW
+    BEGIN
+        INSERT INTO feedback (ID, mentor_feedback, mentee_feedback) VALUES (NEW.ID, NULL, NULL);
+    END;
+""")
+
+# Create procedure to add a new mentor
+cursor.execute("DROP PROCEDURE IF EXISTS AddMentor;")  # Optional: Drops procedure if it exists
+cursor.execute("""
+    CREATE PROCEDURE AddMentor(IN name VARCHAR(255), IN highest_qualification VARCHAR(255), IN dept_id INT)
+    BEGIN
+        INSERT INTO mentor (Name, Highest_Qualification, department_id) VALUES (name, highest_qualification, dept_id);
+    END;
+""")
+
+# Create function to calculate the average GPA of mentees for a given mentor
+cursor.execute("DROP FUNCTION IF EXISTS AvgGPA;")
+cursor.execute("""
+    CREATE FUNCTION AvgGPA(mentor_id INT) RETURNS FLOAT
+    READS SQL DATA
+    BEGIN
+        DECLARE avg_gpa FLOAT;
+        SELECT AVG(GPA) INTO avg_gpa FROM mentee WHERE Mentor_ID = mentor_id;
+        RETURN avg_gpa;
+    END;
+""")
+
+
 # Commit the transaction
 db.commit()
 
