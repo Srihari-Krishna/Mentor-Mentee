@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import QFormLayout,QLineEdit,QComboBox,QApplication,QMainWi
 from PyQt5.QtGui import QPalette,QColor
 from PyQt5.QtCore import QSize
 import mysql.connector
-
+from PyQt5.QtCore import Qt
 db = mysql.connector.connect(
              host="localhost",
              user="root",
@@ -649,7 +649,7 @@ class MainWindow(QMainWindow):
         layout2=QVBoxLayout()
         
         admin_button=QPushButton('Admin')
-        admin_button.clicked.connect(self.admin_login)
+        admin_button.clicked.connect(self.admin_login_1)
         layout2.addWidget(admin_button)
         mentor_button=QPushButton('Mentor')
         layout2.addWidget(mentor_button)
@@ -683,7 +683,101 @@ class MainWindow(QMainWindow):
         # Move the top-left point of the window to the top-left point of the frame geometry
         self.move(window_geometry.topLeft())
 
-    def admin_login(self):
+    def admin_login_1(self):
+        layout2=QVBoxLayout()
+        
+        new_container = QWidget(self)
+        layout = QFormLayout()
+        layout.setSpacing(0)  # Remove spacing between rows
+        layout.setContentsMargins(20, 20, 20, 20)
+
+    # Create widgets
+        username_label = QLabel('Username:')
+        self.admin_input = QLineEdit()
+    
+        password_label = QLabel('Password:')
+        self.admin_password = QLineEdit()
+        self.admin_password.setEchoMode(QLineEdit.Password)
+    
+        submit_button = QPushButton('Login')
+        submit_button.clicked.connect(self.admin_login_2)
+
+    # Add to form layout
+        layout.addRow(username_label, self.admin_input)
+        layout.addRow(password_label, self.admin_password)
+        layout.addRow('', submit_button)  # Empty label for button row
+    
+    # Label style
+        label_style = '''
+        QLabel {
+            color: #333333;
+            font-size: 23px;
+            font-family: "Times New Roman", Times, serif;
+            
+        }
+        '''
+    
+    # Input style
+        input_style = '''
+        QLineEdit {
+            background-color: #000000;
+            color: white;
+            font-size: 26px;
+            font-family: "Times New Roman", Times, serif;
+            padding: 10px;
+            border-radius: 10px;
+            border: 3px solid #D3D3D3;
+            margin: 0px;
+        }
+        QLineEdit:hover {
+            background-color: #45a049;
+            border-color: #357a38;
+        }
+        QLineEdit:focus {
+            border-color: #2196F3;
+        }
+        '''
+    
+    # Button style
+        button_style = '''
+        QPushButton {
+            background-color: #000000;
+            color: white;
+            font-size: 23px;
+            font-family: "Times New Roman", Times, serif;
+            padding: 10px 20px;
+            border-radius: 10px;
+            border: none;
+            min-height: 45px;
+            margin-top: 10px;
+        }
+        QPushButton:hover {
+            background-color: #45a049;
+        }
+        QPushButton:pressed {
+            background-color: #357a38;
+        }
+        '''
+
+    # Apply styles
+        username_label.setStyleSheet(label_style)
+        password_label.setStyleSheet(label_style)
+        self.admin_input.setStyleSheet(input_style)
+        self.admin_password.setStyleSheet(input_style)
+        submit_button.setStyleSheet(button_style)
+
+    # Set form layout properties to minimize spacing
+        layout.setLabelAlignment(Qt.AlignLeft)
+        layout.setFormAlignment(Qt.AlignLeft)
+        layout.setHorizontalSpacing(10)  # Space between label and field
+        layout.setVerticalSpacing(0)     # Space between rows
+
+        layout2.addWidget(QWidget())
+        layout2.addLayout(layout)
+        layout2.addWidget(QWidget())
+        new_container.setLayout(layout2)
+        self.setCentralWidget(new_container)
+    def admin_login_2(self):
         # Remove and delete all widgets from the central widget or layout
         # if self.centralWidget() is not None:
         #     self.centralWidget().deleteLater()  # Deletes current central widget
