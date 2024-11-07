@@ -129,7 +129,9 @@ cursor.execute("""
     READS SQL DATA
     BEGIN
         DECLARE avg_gpa FLOAT;
-        SELECT AVG(GPA) INTO avg_gpa FROM mentee WHERE Mentor_ID = mentor_id;
+        SELECT AVG(GPA) INTO avg_gpa 
+        FROM mentee 
+        WHERE mentee.mentor_id = mentor_id;
         RETURN avg_gpa;
     END;
 """)
