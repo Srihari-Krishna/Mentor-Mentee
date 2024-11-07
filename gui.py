@@ -1,7 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QFormLayout,QLineEdit,QComboBox,QApplication,QMainWindow,QWidget,QHBoxLayout,QVBoxLayout,QPushButton,QLabel,QTabWidget,QStackedLayout,QSizePolicy,QGridLayout,QTableWidget,QTableWidgetItem, QDesktopWidget
-from PyQt5.QtGui import QPalette,QColor
+from PyQt5.QtGui import QPalette,QColor, QCursor
 from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtWidgets import QMessageBox
 import mysql.connector
 
 db = mysql.connector.connect(
@@ -50,56 +51,92 @@ class M_M(QWidget):
     def mentor_print(self):
         widget_temp = QWidget()
         layout = QGridLayout()
-    
-    # Create table
-        table = QTableWidget()
-        table.setColumnCount(3)  # Set number of columns
-        table.setHorizontalHeaderLabels(['Name', 'Department_ID', 'Qualification'])  # Set headers
-    
+
+        # Create table
+        self.table = QTableWidget()
+        self.table.setColumnCount(4)  # Set number of columns
+        self.table.setHorizontalHeaderLabels(['Name', 'Department', 'Qualification', 'Average GPA'])  # Set headers
+
         data = []
         cursor.execute("SELECT * FROM mentor")
         mentors = cursor.fetchall()
         for mentor in mentors:
-            data.append((str(mentor[1]), str(mentor[2]), str(mentor[3])))       
-        #cursor.close()
-        #db.close()
-        print(data)
-        # Set number of rows
-        table.setRowCount(len(data))
-    
-        for row, (name, dept, qual) in enumerate(data):
-            table.setItem(row, 0, QTableWidgetItem(name))
-            table.setItem(row, 1, QTableWidgetItem(dept))
-            table.setItem(row, 2, QTableWidgetItem(qual))
-    
-        # Resize columns to content
-        table.resizeColumnsToContents()
-    
-        # Add table to layout
-        layout.addWidget(table, 0, 0, 1, 4)  # Span across all 4 columns
+            if mentor[2] == 1:
+                dept_var = 'CSE'
+            elif mentor[2] == 2:
+                dept_var = 'ECE'
+            elif mentor[2] == 3:
+                dept_var = 'MECH'
+            elif mentor[2] == 4:
+                dept_var = 'CIVIL'
+            elif mentor[2] == 5:
+                dept_var = 'IT'
+            elif mentor[2] == 6:
+                dept_var = 'EEE'
 
+            data.append((str(mentor[1]), dept_var, str(mentor[3]), mentor[0]))  # Include mentor ID for GPA calculation
+
+        # Set number of rows
+        self.table.setRowCount(len(data))
+
+        for row, (name, dept, qual, mentor_id) in enumerate(data):
+            self.table.setItem(row, 0, QTableWidgetItem(name))
+            self.table.setItem(row, 1, QTableWidgetItem(dept))
+            self.table.setItem(row, 2, QTableWidgetItem(qual))
+            self.table.setItem(row, 3, QTableWidgetItem(''))  # Placeholder for Average GPA
+
+        # Resize columns to content
+        self.table.resizeColumnsToContents()
+
+        # Add table to layout
+        layout.addWidget(self.table, 0, 0, 1, 4)  # Span across all 4 columns
+
+        # Back button
         back_button = QPushButton('Back')
         back_button.setStyleSheet("""QPushButton{
-        background-color: #000000;
-        color: white;
-        font-size: 26px;
-        font-family: "Times New Roman", Times, serif;
-        border-radius: 50px;
-        border: 3px solid #D3D3D3;
+            background-color: #000000;
+            color: white;
+            font-size: 26px;
+            font-family: "Times New Roman", Times, serif;
+            border-radius: 50px;
+            border: 3px solid #D3D3D3;
         }
         QPushButton:hover {
-        background-color: #45a049;
+            background-color: #45a049;
         }""")
-
-        # Add back button at the bottom
         layout.addWidget(back_button, 1, 0)
+
+        # Calculate Average GPA button
+        calc_gpa_button = QPushButton('Calculate Average GPA')
+        calc_gpa_button.setStyleSheet("""QPushButton{
+            background-color: #000000;
+            color: white;
+            font-size: 26px;
+            font-family: "Times New Roman", Times, serif;
+            border-radius: 50px;
+            border: 3px solid #D3D3D3;
+        }
+        QPushButton:hover {
+            background-color: #45a049;
+        }""")
+        layout.addWidget(calc_gpa_button, 1, 1)
+
         layout.addWidget(QWidget(), 1, 2)
         layout.addWidget(QWidget(), 1, 3)
-    
+
         widget_temp.setLayout(layout)
         self.layout1.addWidget(widget_temp)
         self.layout1.setCurrentIndex(self.layout1.count() - 1)
+
+        # Connect buttons to actions
         back_button.clicked.connect(self.go_back_mentor)
+        calc_gpa_button.clicked.connect(self.calculate_avg_gpa)
+
+    def calculate_avg_gpa(self):
+        for row in range(self.table.rowCount()):
+            cursor.execute(f"SELECT AvgGPA({row+1})")
+            avg_gpa = cursor.fetchone()[0]
+            self.table.setItem(row, 3, QTableWidgetItem(str(avg_gpa)))
 
     def go_back_mentor(self):
         self.layout1.setCurrentIndex(0)  # Back to the first screen
@@ -107,11 +144,6 @@ class M_M(QWidget):
     def mentor_add(self):
         add_widget = QWidget()
         layout = QVBoxLayout()
-
-        # form_label = QLabel('Add Mentor Form')
-        # layout.addWidget(form_label)
-
-        # Create a form layout for Name, Department, and Qualification
         form_layout = QFormLayout()
 
         # Name Input
@@ -323,11 +355,6 @@ class M_M(QWidget):
     def mentee_add(self):
         add_widget = QWidget()
         layout = QVBoxLayout()
-
-        # form_label = QLabel('Add Mentor Form')
-        # layout.addWidget(form_label)
-
-        # Create a form layout for Name, Department, and Qualification
         form_layout = QFormLayout()
 
         # Name Input
@@ -341,11 +368,6 @@ class M_M(QWidget):
         self.department_input = QComboBox()
         self.department_input.addItems(['CSE', 'ECE', 'MECH', 'CIVIL', 'IT', 'EEE'])
         form_layout.addRow('Department:', self.department_input)
-
-        # Qualification Dropdown
-        # self.qualification_input = QComboBox()
-        # self.qualification_input.addItems(['HS', 'UG', 'PG', 'PhD'])
-        # form_layout.addRow('Highest Qualification:', self.qualification_input)
 
         mentor_names = []
         cursor.execute(f"select * from mentor")
@@ -551,21 +573,9 @@ class Mentor(QWidget):
         self.mentor_input.addItems(mentor_names)
         form_layout.addRow('mentor:', self.mentor_input)
 
-        #mentor_name = self.mentor_input.currentText()
-
-        #cursor.execute(f"select id from mentor where name = '{mentor_name}'")
-        #mentor_id = cursor.fetchone()[0]
-
         self.mentee_input = QComboBox()
         self.update_mentee_dropdown()
         form_layout.addRow('mentee:', self.mentee_input)
-        # cursor.execute(f"select name from mentee where mentor_id = '{mentor_id}'")
-        # mentees = cursor.fetchall()
-        # mentee_names = []
-        # for mentee in mentees:
-        #     mentee_names.append(mentee[0])
-        # self.mentee_input.addItems(mentee_names)
-        # form_layout.addRow('mentee:', self.mentee_input)
 
         self.timestamp_input = QLineEdit()
         form_layout.addRow('Timestamp:', self.timestamp_input)
@@ -694,6 +704,27 @@ class Mentor(QWidget):
         mentor_names = [mentor[0] for mentor in mentors]
         self.mentor_input.addItems(mentor_names)
         form_layout.addRow('Mentor:', self.mentor_input)
+
+        self.mentor_input.setStyleSheet("""
+            QComboBox {
+                background-color: #000000;
+                color: white;
+                font-size: 26px;
+                font-family: "Times New Roman", Times, serif;
+                padding: 10px;
+                border-radius: 10px;
+                border: 3px solid #D3D3D3;
+            }
+            QComboBox:hover {
+                background-color: #45a049;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+            QComboBox::down-arrow {
+                image: url(/path/to/arrow.png); /* Optional: custom arrow */
+            }
+        """)
 
         # Session Table
         self.session_table = QTableWidget()
@@ -1215,9 +1246,7 @@ class MainWindow(QMainWindow):
         
         widget.setLayout(layout1)
         self.setCentralWidget(widget)
-    # def login_page(self,type):   #func for login page
-    #     if self.centralWidget() is not None:
-    #         self.centralWidget().deleteLater()
+    
     def center(self):
         # Get the screen geometry
         screen_geometry = QDesktopWidget().availableGeometry()
@@ -1230,8 +1259,41 @@ class MainWindow(QMainWindow):
         # Move the top-left point of the window to the top-left point of the frame geometry
         self.move(window_geometry.topLeft())
 
+    def check_credentials(self):
+        username = self.layout2.admin_input.text()
+        password = self.layout2.admin_password.text()
+
+        user_pass = {'log1':{'name':'srihari','password':'1234'},
+                     'log2':{'name':'shreyas','password':'1234'}}
+        if username == user_pass['log1']['name'] and password == user_pass['log1']['password']:
+            self.admin_login_2()
+        else:
+            msg = QMessageBox()
+            msg.setStyleSheet("""
+                QLabel{
+                    font-size: 26px;
+                }
+                QPushButton{
+                    background-color: #000000;
+                    color: white;
+                    font-size: 26px;
+                    font-family: "Times New Roman", Times, serif;
+                    border-radius: 50px;
+                    padding:5px;
+                    border: 3px solid #D3D3D3;
+                }
+                QPushButton:hover {
+                    background-color: #45a049;
+                }                  
+            }""")
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Error")
+            msg.setInformativeText('Invalid Credentials')
+            msg.setWindowTitle("Error")
+            msg.exec_()
+
     def admin_login_1(self):
-        layout2=QVBoxLayout()
+        self.layout2=QVBoxLayout()
         
         new_container = QWidget(self)
         layout = QFormLayout()
@@ -1240,19 +1302,20 @@ class MainWindow(QMainWindow):
 
     # Create widgets
         username_label = QLabel('Username:')
-        self.admin_input = QLineEdit()
+        self.layout2.admin_input = QLineEdit()
     
         password_label = QLabel('Password:')
-        self.admin_password = QLineEdit()
-        self.admin_password.setEchoMode(QLineEdit.Password)
-    
-        submit_button = QPushButton('Login')
-        submit_button.clicked.connect(self.admin_login_2)
+        self.layout2.admin_password = QLineEdit()
+        self.layout2.admin_password.setEchoMode(QLineEdit.Password)
 
+        self.layout2.submit_button = QPushButton('Login')
+        self.layout2.submit_button.clicked.connect(self.check_credentials)
+
+        # submit_button.clicked.connect(self.admin_login_2)
     # Add to form layout
-        layout.addRow(username_label, self.admin_input)
-        layout.addRow(password_label, self.admin_password)
-        layout.addRow('', submit_button)  # Empty label for button row
+        layout.addRow(username_label, self.layout2.admin_input)
+        layout.addRow(password_label, self.layout2.admin_password)
+        layout.addRow('', self.layout2.submit_button)  # Empty label for button row
     
     # Label style
         label_style = '''
@@ -1263,7 +1326,6 @@ class MainWindow(QMainWindow):
             
         }
         '''
-    
     # Input style
         input_style = '''
         QLineEdit {
@@ -1309,9 +1371,9 @@ class MainWindow(QMainWindow):
     # Apply styles
         username_label.setStyleSheet(label_style)
         password_label.setStyleSheet(label_style)
-        self.admin_input.setStyleSheet(input_style)
-        self.admin_password.setStyleSheet(input_style)
-        submit_button.setStyleSheet(button_style)
+        self.layout2.admin_input.setStyleSheet(input_style)
+        self.layout2.admin_password.setStyleSheet(input_style)
+        self.layout2.submit_button.setStyleSheet(button_style)
 
     # Set form layout properties to minimize spacing
         layout.setLabelAlignment(Qt.AlignLeft)
@@ -1319,14 +1381,14 @@ class MainWindow(QMainWindow):
         layout.setHorizontalSpacing(10)  # Space between label and field
         layout.setVerticalSpacing(0)     # Space between rows
 
-        layout2.addWidget(QWidget())
-        layout2.addLayout(layout)
-        layout2.addWidget(QWidget())
-        new_container.setLayout(layout2)
+        self.layout2.addWidget(QWidget())
+        self.layout2.addLayout(layout)
+        self.layout2.addWidget(QWidget())
+        new_container.setLayout(self.layout2)
         self.setCentralWidget(new_container)
 
     def admin_login_2(self):
-        
+
         new_container = QWidget(self) 
         layout=QVBoxLayout(new_container)
         tabs=QTabWidget(new_container)
@@ -1368,11 +1430,6 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(new_container)
 
     def Mentor_login(self):
-        # Remove and delete all widgets from the central widget or layout
-        # if self.centralWidget() is not None:
-        #     self.centralWidget().deleteLater()  # Deletes current central widget
-
-        # Set the new layout with the new widgets
         new_container = QWidget(self) 
         layout=QVBoxLayout(new_container)
         tabs=QTabWidget(new_container)
@@ -1423,7 +1480,7 @@ class MainWindow(QMainWindow):
                 background: #f8f8f8;
             }
             QTabBar::tab {
-                background: #E0E0E0; /* Normal tab background */
+                background: #ffffff; /* Normal tab background */
                 color: black;        /* Text color */
                 padding: 20px;       /* Increase space around the text */
                 font-size: 26px;           /* Font size */
@@ -1436,12 +1493,12 @@ class MainWindow(QMainWindow):
                 border-top-right-radius: 4px;
             }
             QTabBar::tab:selected { /* When the tab is selected */
-                background: #D1D1D1;  /* Selected tab background */
+                background: #fffff7;  /* Selected tab background */
                 color: #333;          /* Selected tab text color */
                 font-weight: bold;
             }
             QTabBar::tab:hover { /* When hovering over the tab */
-                background: #CCCCCC;
+                background: #fffff5;
             }
         """)
         tabs.setTabPosition(QTabWidget.West)
@@ -1453,13 +1510,10 @@ class MainWindow(QMainWindow):
         new_container.setLayout(layout)
         self.setCentralWidget(new_container)
     
-        
-        
-
 app=QApplication([])
 app.setStyleSheet("""
     QMainWindow{
-           background-color: #D3D3D3;
+           background-color: #FFFFFF;
                  
     }
     QPushButton {
@@ -1479,6 +1533,66 @@ app.setStyleSheet("""
     QPushButton:pressed {
         background-color: #3e8e41; /* Even darker green when pressed */
     }
+    QLineEdit {
+                background-color: #000000;
+                color: white;
+                font-size: 26px;
+                font-family: "Times New Roman", Times, serif;
+                padding: 10px;
+                border-radius: 10px;
+                border: 3px solid #D3D3D3;
+            }
+            QLineEdit:hover {
+                background-color: #45a049;
+            }
+    QComboBox {
+                background-color: #000000;
+                color: white;
+                font-size: 26px;
+                font-family: "Times New Roman", Times, serif;
+                padding: 10px;
+                border-radius: 10px;
+                border: 3px solid #D3D3D3;
+            }
+            QComboBox:hover {
+                background-color: #45a049;
+            }
+            QComboBox::drop-down {
+                border: none;
+            }
+            QComboBox::down-arrow {
+                image: url(/path/to/arrow.png); /* Optional: custom arrow */
+            }
+    QTableWidget {
+    background-color: #ffffff;
+    color: black;
+    font-size: 26px;
+    font-family: "Times New Roman", Times, serif;
+    border: 3px solid #ffffff;
+    border-radius: 10px;
+    gridline-color: #ffffff;
+}
+
+    QTableWidget::item {
+    padding: 10px;
+}
+
+    QTableWidget::item:selected {
+    background-color: #45a049;
+    color: #000000;
+}
+
+    QHeaderView::section {
+    background-color: #ffffff;
+    color: #000000;
+    font-weight: bold;
+    border: 1px solid #fffff1;
+    padding: 5px;
+}
+
+    QTableCornerButton::section {
+    background-color: #D3D3D3;
+}
 """)
 window=MainWindow()
 window.show()
