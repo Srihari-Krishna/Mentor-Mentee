@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Mentor Reviews</title>
+  <link rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+  <h2>Session Reviews</h2>
+
+  <div th:if="${error}">
+    <div class="alert alert-warning" th:text="${error}"></div>
+  </div>
+
+  <table class="table table-bordered" th:if="${reviews}">
+    <thead class="thead-dark">
+      <tr>
+        <th>Session ID</th>
+        <th>Child Name</th>
+        <th>Mentor Name</th>
+        <th>Scheduled Time</th>
+        <th>Duration (min)</th>
+        <th>Mentor’s Feedback</th>
+        <th>Child’s Feedback</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="sess : ${reviews}">
+        <td th:text="${sess.id}"></td>
+        <td th:text="${sess.mentee.name}"></td>
+        <td th:text="${sess.mentor.name}"></td>
+        <td th:text="${sess.scheduledTime}"></td>
+        <td th:text="${sess.duration}"></td>
+        <td th:text="${sess.mentorFeedback != null ? sess.mentorFeedback : '—'}"></td>
+        <td th:text="${sess.menteeFeedback != null ? sess.menteeFeedback : '—'}"></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div th:if="${#lists.isEmpty(reviews)}">
+    <p>No completed sessions to show.</p>
+  </div>
+
+  <a th:href="@{/parent/home}" class="btn btn-secondary mt-3">Back to Parent Home</a>
+</body>
+</html>

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Mentor Session Details</title>
+  <link rel="stylesheet"
+        href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+  <h2>All Sessions for Mentor</h2>
+  <table class="table table-bordered">
+    <thead class="thead-dark">
+      <tr>
+        <th>Session ID</th>
+        <th>Mentee</th>
+        <th>Scheduled Time</th>
+        <th>Duration</th>
+        <th>Mentor Feedback</th>
+        <th>Mentee Feedback</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="s : ${sessions}">
+        <td th:text="${s.id}"></td>
+        <td th:text="${s.mentee.name}"></td>
+        <td th:text="${s.scheduledTime}"></td>
+        <td th:text="${s.duration}"></td>
+        <td th:text="${s.mentorFeedback != null ? s.mentorFeedback : '—'}"></td>
+        <td th:text="${s.menteeFeedback != null ? s.menteeFeedback : '—'}"></td>
+      </tr>
+    </tbody>
+  </table>
+  <a th:href="@{/admin/reports}" class="btn btn-secondary">Back to Reports</a>
+</body>
+</html>

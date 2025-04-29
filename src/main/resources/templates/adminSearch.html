@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Admin Search</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+  <h2>Search Mentor/Mentee Details</h2>
+  <form th:action="@{/admin/search}" method="get">
+    <div class="form-group">
+      <label for="typeSelect">Search Type:</label>
+      <select id="typeSelect" name="type" class="form-control" required>
+        <option value="mentor" th:selected="${type=='mentor'}">Mentor</option>
+        <option value="mentee" th:selected="${type=='mentee'}">Mentee</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="queryInput">Name:</label>
+      <input type="text" id="queryInput" name="query" class="form-control" placeholder="Enter name to search"/>
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+  </form>
+  
+  <hr/>
+  
+  <div th:if="${mentors}">
+    <h3>Mentor Results</h3>
+    <table class="table table-striped">
+      <thead>
+         <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Role</th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr th:each="mentor : ${mentors}">
+           <td th:text="${mentor.id}"></td>
+           <td th:text="${mentor.name}"></td>
+           <td th:text="${mentor.role}"></td>
+         </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <div th:if="${mentees}">
+    <h3>Mentee Results</h3>
+    <table class="table table-striped">
+      <thead>
+         <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Year</th>
+         </tr>
+      </thead>
+      <tbody>
+         <tr th:each="mentee : ${mentees}">
+           <td th:text="${mentee.id}"></td>
+           <td th:text="${mentee.name}"></td>
+           <td th:text="${mentee.year}"></td>
+         </tr>
+      </tbody>
+    </table>
+  </div>
+  
+  <hr/>
+  <a th:href="@{/admin/home}" class="btn btn-secondary">Back to Dashboard</a>
+</body>
+</html>

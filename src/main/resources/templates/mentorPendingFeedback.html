@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Pending Feedback</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <h2>Pending Feedback for Completed Sessions</h2>
+    <div th:if="${error}">
+       <div class="alert alert-danger" th:text="${error}"></div>
+    </div>
+    <div th:if="${pendingSessions}">
+       <table class="table table-bordered">
+         <thead class="thead-dark">
+            <tr>
+              <th>Session ID</th>
+              <th>Mentee Name</th>
+              <th>Scheduled Time</th>
+              <th>Duration</th>
+              <th>Action</th>
+            </tr>
+         </thead>
+         <tbody>
+            <tr th:each="sess : ${pendingSessions}">
+                <td th:text="${sess.id}"></td>
+                <td th:text="${sess.mentee.name}"></td>
+                <td th:text="${sess.scheduledTime}"></td>
+                <td th:text="${sess.duration}"></td>
+                <td>
+                  <a th:href="@{'/mentor/feedback/submit/' + ${sess.id}}" class="btn btn-primary">Give Feedback</a>
+                </td>
+            </tr>
+         </tbody>
+       </table>
+    </div>
+    <a th:href="@{/mentor/home}" class="btn btn-secondary">Back to Mentor Home</a>
+</body>
+</html>

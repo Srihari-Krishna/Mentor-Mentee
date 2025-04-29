@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Submit Feedback</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <h2>Submit Feedback for Session <span th:text="${sessionObj.id}"></span></h2>
+    
+    <div th:if="${error}">
+       <div class="alert alert-danger" th:text="${error}"></div>
+    </div>
+    
+    <form th:action="@{'/mentor/feedback/submit/' + ${sessionObj.id}}" method="post">
+         <div class="form-group">
+              <label>Feedback:</label>
+              <textarea name="feedbackText" class="form-control" rows="5" placeholder="Enter your feedback" required></textarea>
+         </div>
+         <button type="submit" class="btn btn-primary">Submit Feedback</button>
+    </form>
+    
+    <hr/>
+    <a th:href="@{/mentor/feedback/pending}" class="btn btn-secondary">Back to Pending Feedback</a>
+</body>
+</html>

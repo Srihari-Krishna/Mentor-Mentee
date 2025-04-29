@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Upcoming Sessions</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+  <h2>Your Upcoming Sessions</h2>
+
+  <div th:if="${error}">
+    <div class="alert alert-danger" th:text="${error}"></div>
+  </div>
+
+  <table class="table table-bordered" th:if="${upcomingSessions}">
+    <thead class="thead-dark">
+      <tr>
+        <th>Session ID</th>
+        <th>Mentor Name</th>
+        <th>Scheduled Time</th>
+        <th>Duration (min)</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr th:each="sess : ${upcomingSessions}">
+        <td th:text="${sess.id}"></td>
+        <td th:text="${sess.mentor.name}"></td>
+        <td th:text="${sess.scheduledTime}"></td>
+        <td th:text="${sess.duration}"></td>
+        <td>
+          <span class="badge badge-info">Upcoming</span>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div th:if="${#lists.isEmpty(upcomingSessions)}">
+    <p>No upcoming sessions scheduled.</p>
+  </div>
+
+  <a th:href="@{/mentee/home}" class="btn btn-secondary mt-3">Back to Mentee Home</a>
+</body>
+</html>

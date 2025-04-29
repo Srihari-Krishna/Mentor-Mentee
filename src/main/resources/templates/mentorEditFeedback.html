@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Edit Mentor Feedback</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <h2>Edit Feedback for Session <span th:text="${sessionObj.id}"></span></h2>
+    <form th:action="@{'/mentor/sessions/edit/' + ${sessionObj.id}}" method="post">
+         <div class="form-group">
+              <label>Feedback:</label>
+              <textarea name="mentorFeedback" class="form-control" rows="5" placeholder="Enter your feedback" required th:text="${sessionObj.mentorFeedback}"></textarea>
+         </div>
+         <button type="submit" class="btn btn-primary">Update Feedback</button>
+    </form>
+    <a th:href="@{/mentor/sessions}" class="btn btn-secondary mt-3">Back to Sessions</a>
+</body>
+</html>

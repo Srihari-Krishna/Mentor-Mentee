@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Child Progress</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+  <h2>My Child’s Progress</h2>
+
+  <div th:if="${error}">
+    <div class="alert alert-warning" th:text="${error}"></div>
+  </div>
+
+  <div th:if="${children}">
+    <div th:each="child : ${children}" class="card mb-4">
+      <div class="card-header">
+        <strong th:text="${child.name}">Child Name</strong> 
+        (Year <span th:text="${child.year}"></span>)
+      </div>
+      <div class="card-body">
+        <p><strong>CGPA:</strong> <span th:text="${child.cgpa}"></span></p>
+        <p><strong>Attendance:</strong> <span th:text="${child.attendance + '%'}"></span></p>
+
+        <h5>Mentor Details</h5>
+        <div th:if="${child.mentor != null}">
+          <p><strong>Name:</strong> <span th:text="${child.mentor.name}"></span></p>
+          <p><strong>Role:</strong> <span th:text="${child.mentor.role}"></span></p>
+          <!-- Help‑desk note for contacting mentor -->
+          <div class="alert alert-info mt-3">
+            Need to contact your mentor?
+            Please call the PESU Help Desk at <strong>+91‑1234‑5678</strong>
+            and ask to be connected with <strong th:text="${child.mentor.name}"></strong>.
+          </div>
+        </div>
+        <div th:if="${child.mentor == null}">
+          <p class="text-muted">No mentor assigned yet.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <a th:href="@{/parent/home}" class="btn btn-secondary">Back to Parent Home</a>
+</body>
+</html>

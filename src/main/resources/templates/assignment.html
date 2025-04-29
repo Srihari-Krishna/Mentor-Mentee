@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Assign Mentees</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script>
+        // Function to update mentee dropdown based on selected mentor's year
+        function updateMenteeDropdown() {
+            var mentorSelect = document.getElementById("mentorSelect");
+            var selectedOption = mentorSelect.options[mentorSelect.selectedIndex];
+            var mentorYear = selectedOption.getAttribute("data-year");
+            var menteeSelect = document.getElementById("menteeSelect");
+
+            // Clear current mentee options
+            menteeSelect.innerHTML = "";
+
+            // Fetch mentees for the selected year via AJAX (fetch API)
+            fetch('/admin/menteesByYear?year=' + mentorYear)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(function(mentee) {
+                        var option = document.createElement("option");
+                        option.value = mentee.id;
+                        option.text = mentee.name;
+                        menteeSelect.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error fetching mentees:', error));
+        }
+    </script>
+</head>
+<body class="container mt-5">
+    <h2>Mentor-Mentee Assignment</h2>
+    <div th:if="${message}">
+        <div class="alert alert-success" th:text="${message}"></div>
+    </div>
+    <div th:if="${error}">
+        <div class="alert alert-danger" th:text="${error}"></div>
+    </div>
+    <form th:action="@{/admin/assign}" method="post">
+        <div class="form-group">
+            <label>Select Mentor:</label>
+            <select id="mentorSelect" name="mentorId" class="form-control" required onchange="updateMenteeDropdown()">
+                <option th:each="mentor : ${mentors}" 
+                        th:value="${mentor.id}" 
+                        th:text="${mentor.name + ' (Year: ' + mentor.yearCanMentor + ')'}"
+                        th:attr="data-year=${mentor.yearCanMentor}">
+                </option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Select Mentee (filtered by mentor's year):</label>
+            <select id="menteeSelect" name="menteeId" class="form-control" required>
+                <!-- Options will be dynamically loaded based on selected mentor -->
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Assign Mentee</button>
+    </form>
+    <hr>
+    <a th:href="@{/admin/home}" class="btn btn-secondary">Back to Dashboard</a>
+</body>
+</html>

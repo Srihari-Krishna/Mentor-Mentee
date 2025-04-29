@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Schedule Session</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <h2>Schedule a Session</h2>
+    
+    <div th:if="${error}">
+        <div class="alert alert-danger" th:text="${error}"></div>
+    </div>
+    <div th:if="${success}">
+        <div class="alert alert-success" th:text="${success}"></div>
+    </div>
+    
+    <!-- Display mentee session info -->
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Mentee ID</th>
+                <th>Name</th>
+                <th>Attendance</th>
+                <th>Allowed Sessions</th>
+                <th>Scheduled Sessions</th>
+                <th>Remaining Sessions</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="info : ${menteeInfos}"
+                th:classappend="${info.remainingSessions} <= 0 ? 'table-danger' : ''">
+                <td th:text="${info.mentee.id}"></td>
+                <td th:text="${info.mentee.name}"></td>
+                <td th:text="${info.mentee.attendance + '%'}"></td>
+                <td th:text="${info.allowedSessions}"></td>
+                <td th:text="${info.scheduledSessions}"></td>
+                <td th:text="${info.remainingSessions}"></td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <!-- Scheduling Form -->
+    <form th:action="@{/mentor/schedule}" method="post" class="mt-4">
+        <div class="form-group">
+            <label>Select Mentee (Only those with remaining sessions available):</label>
+            <select name="menteeId" class="form-control" required>
+                <option th:each="info : ${menteeInfos}"
+                        th:if="${info.remainingSessions} > 0"
+                        th:value="${info.mentee.id}"
+                        th:text="${info.mentee.name + ' (Remaining: ' + info.remainingSessions + ')'}"></option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Scheduled Date & Time:</label>
+            <input type="datetime-local" name="scheduledTime" class="form-control" required/>
+        </div>
+        <div class="form-group">
+            <label>Duration (minutes, max 20):</label>
+            <input type="number" name="duration" class="form-control" required max="20" min="1"/>
+        </div>
+        <button type="submit" class="btn btn-primary">Schedule Session</button>
+    </form>
+    
+    <hr>
+    <a th:href="@{/mentor/home}" class="btn btn-secondary">Back to Mentor Home</a>
+</body>
+</html>

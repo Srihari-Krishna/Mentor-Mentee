@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Parent Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Include FontAwesome for icon rendering -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="container mt-5">
+    <h2>
+        Welcome, <span th:text="${username}"></span> (Parent)
+        <!-- Render the role icon provided by the controller -->
+        <i class="fas" th:classappend="' ' + ${roleIcon}"></i>
+    </h2>
+    <hr>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <a th:href="@{/parent/childProgress}" class="btn btn-primary btn-block">View Child's Progress</a>
+        </div>
+        <div class="col-md-6 mb-3">
+            <a th:href="@{/parent/mentorReviews}" class="btn btn-info btn-block">View Mentor Reviews</a>
+        </div>
+    </div>
+    <hr>
+    <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+</body>
+</html>

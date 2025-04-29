@@ -1,0 +1,36 @@
+
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mentor Dashboard</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <!-- Include FontAwesome for icon rendering -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body class="container mt-5">
+    <h2>
+        Welcome, <span th:text="${username}"></span> (Mentor)
+        <!-- Render the role icon provided by the controller -->
+        <i class="fas" th:classappend="' ' + ${roleIcon}"></i>
+    </h2>
+    <hr>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <a th:href="@{/mentor/mentees}" class="btn btn-primary btn-block">View My Mentees</a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a th:href="@{/mentor/schedule}" class="btn btn-success btn-block">Schedule a Session</a>
+        </div>
+        <div class="col-md-4 mb-3">
+            <a th:href="@{/mentor/feedback/pending}" class="btn btn-warning btn-block">Give Session Feedback</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <a th:href="@{/mentor/sessions}" class="btn btn-info btn-block">View Session Info</a>
+        </div>
+    </div>
+    <hr>
+    <a th:href="@{/logout}" class="btn btn-danger">Logout</a>
+</body>
+</html>

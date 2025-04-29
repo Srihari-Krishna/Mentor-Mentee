@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Mentee Sessions</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body class="container mt-5">
+    <h2>My Sessions</h2>
+
+    <div th:if="${error}">
+        <div class="alert alert-danger" th:text="${error}"></div>
+    </div>
+
+    <table class="table table-bordered">
+        <thead class="thead-dark">
+            <tr>
+                <th>Session ID</th>
+                <th>Mentor Name</th>
+                <th>Scheduled Time</th>
+                <th>Duration (min)</th>
+                <th>Mentor Feedback</th>
+                <th>My Feedback</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr th:each="sess : ${sessions}">
+                <td th:text="${sess.id}"></td>
+                <td th:text="${sess.mentor.name}"></td>
+                <td th:text="${sess.scheduledTime}"></td>
+                <td th:text="${sess.duration}"></td>
+                <td th:text="${sess.mentorFeedback != null ? sess.mentorFeedback : 'N/A'}"></td>
+                <td th:text="${sess.menteeFeedback != null ? sess.menteeFeedback : 'N/A'}"></td>
+                <td>
+                    <a th:href="@{'/mentee/sessions/edit/' + ${sess.id}}"
+                       class="btn btn-warning btn-sm"
+                       th:text="${sess.menteeFeedback != null ? 'Edit Feedback' : 'Give Feedback'}">
+                    </a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+
+    <a th:href="@{/mentee/home}" class="btn btn-secondary">Back to Mentee Home</a>
+</body>
+</html>

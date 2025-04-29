@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h2>Dashboard</h2>
+    <p>Welcome, <span th:text="${username}"></span>!</p>
+    <p>Your role is: <span th:text="${role}"></span></p>
+    
+    <!-- Role-specific sections -->
+    <div th:if="${role} == 'ADMIN'">
+         <p>Admin options: Assign mentors, review sessions, etc.</p>
+         <!-- Button to navigate to assignment page -->
+         <a th:href="@{/admin/assign}">
+             <button type="button">Go to Assignment Page</button>
+         </a>
+    </div>
+    <div th:if="${role} == 'MENTOR'">
+         <p>Mentor options: View assigned mentees, manage sessions, give feedback, etc.</p>
+    </div>
+    <div th:if="${role} == 'MENTEE'">
+         <p>Mentee options: View session details, schedule sessions, check attendance, etc.</p>
+    </div>
+    <div th:if="${role} == 'PARENT'">
+         <p>Parent options: View mentee progress and mentor reviews.</p>
+    </div>
+    
+    <p><a th:href="@{/logout}">Logout</a></p>
+</body>
+</html>

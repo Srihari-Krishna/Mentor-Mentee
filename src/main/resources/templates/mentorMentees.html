@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>My Mentees</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        .low-attendance {
+            background-color: #f8d7da !important;
+        }
+    </style>
+</head>
+<body class="container mt-5">
+    <h2>My Mentees</h2>
+
+    <div th:if="${error}">
+        <div class="alert alert-danger" th:text="${error}"></div>
+    </div>
+
+    <div th:if="${mentees}">
+        <table class="table table-bordered table-hover">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>CGPA</th>
+                    <th>Year</th>
+                    <th>Attendance</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="mentee : ${mentees}"
+                    th:classappend="${mentee.attendance} &lt; 75 ? 'low-attendance' : ''">
+                    <td th:text="${mentee.id}"></td>
+                    <td th:text="${mentee.name}"></td>
+                    <td th:text="${mentee.cgpa}"></td>
+                    <td th:text="${mentee.year}"></td>
+                    <td th:text="${mentee.attendance + '%'}"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <a th:href="@{/mentor/home}" class="btn btn-secondary">Back to Mentor Home</a>
+</body>
+</html>
